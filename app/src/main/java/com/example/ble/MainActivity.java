@@ -19,6 +19,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onScanResult(int callbackType, final ScanResult result) {
-                    //super.onScanResult(callbackType, result);
                     Log.d("BLE", result.getDevice().getAddress());
                     BluetoothDevice bluetoothDevice = result.getDevice();
                     if (!bluetoothDeviceList.contains(bluetoothDevice)){
@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onScanFailed(int errorCode) {
                     super.onScanFailed(errorCode);
-                    Log.i("BLE", "error");
+                    Log.d("BLE", "error");
                 }
             };
 
@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         listView = findViewById(R.id.lvBluetoothDevices);
-        btnScan = (Button) findViewById(R.id.btnScan);
+        btnScan = findViewById(R.id.btnScan);
         bluetoothDeviceList = new ArrayList<>();
         this.mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         this.mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
@@ -81,8 +81,8 @@ public class MainActivity extends AppCompatActivity {
 
         if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("This app needs location access");
-            builder.setMessage("Please grant location access so this app can detect peripherals.");
+            builder.setTitle("Location Access is necessary.");
+            builder.setMessage("Loaction needed for detecting nearby devices.");
             builder.setPositiveButton(android.R.string.ok, null);
             builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
                 @Override
@@ -101,11 +101,11 @@ public class MainActivity extends AppCompatActivity {
         if (mScanning){
             mScanning = false;
             scanLeDevice(false);
-            btnScan.setText("STOP");
+            btnScan.setText("Stop Scan");
         } else {
             mScanning = true;
             scanLeDevice(true);
-            btnScan.setText("SCAN");
+            btnScan.setText("Start SCAN");
             bluetoothDeviceList.clear();
         }
     }
@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void enableBt(){
         if (mBluetoothAdapter == null) {
-            // Device does not support Bluetooth
+            Toast.makeText(this, "YOUR DEVICE DOES NOT SUPPORT BLUETOOTH", Toast.LENGTH_LONG).show();
         }
         if (!mBluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -131,14 +131,13 @@ public class MainActivity extends AppCompatActivity {
 
     @RequiresApi(23)
     public void scanLeDevice(final boolean enable) {
-        //ScanSettings mScanSettings = new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_BALANCED).setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES).build();
 
         if (enable) {
             mScanning = true;
-            Log.i("Scanning", "start");
+            Log.d("TAG", "start");
             mBluetoothLeScanner.startScan(mLeScanCallback);
         } else {
-            Log.i("Scanning", "stop");
+            Log.d("TAG", "stop");
             mScanning = false;
             mBluetoothLeScanner.stopScan(mLeScanCallback);
         }
@@ -150,11 +149,11 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode) {
             case PERMISSION_REQUEST_COARSE_LOCATION: {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    System.out.println("coarse location permission granted");
+                    Log.d("TAG", "Permission has been granted.");
                 } else {
                     final AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     builder.setTitle("Functionality limited");
-                    builder.setMessage("Since location access has not been granted, this app will not be able to discover beacons when in the background.");
+                    builder.setMessage("Functionality Limited without location Access.");
                     builder.setPositiveButton(android.R.string.ok, null);
                     builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
 
